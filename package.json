@@ -1,0 +1,28 @@
+{
+  "name": "coffee_classkit",
+  "version": "0.0.1",
+  "description": "Utilities for coffee-script classes",
+  "main": "coffee_classkit.coffee",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/printercu/coffee_classkit.git"
+  },
+  "keywords": [
+    "coffee-script",
+    "class",
+    "classes",
+    "inheritance"
+  ],
+  "author": "Max Melentiev <melentievm@gmail.com>",
+  "license": "BSD",
+  "devDependencies": {
+    "mocha": "*",
+    "coffee-script": "*"
+  }
+}
