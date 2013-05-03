@@ -72,6 +72,17 @@ classkit =
       set: (val) -> data = val
     @
 
+  # helpers
+  findOptions: (args) ->
+    args = arguments if arguments.length > 1
+    return [{}] unless args?.length
+    if typeof (last = args[args.length - 1]) is 'object'
+      [last, Array::slice.call(args, 0, args.length - 1)...]
+    else if typeof args[0] is 'object'
+      args
+    else
+      [{}, args...]
+
 # export
 if module?.exports
   module.exports = classkit
