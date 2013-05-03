@@ -1,7 +1,6 @@
 _         = require 'underscore'
 flow      = require 'flow-coffee'
 classkit  = require './coffee_classkit'
-callbacks = require './callbacks'
 
 module.exports = class AbstractController
   classkit.include @, require('./abstract_controller/callbacks')
@@ -35,7 +34,7 @@ module.exports = class AbstractController
   constructor: (@req, @res, @next, @action) ->
 
   process: (method) ->
-    callbacks.run @constructor, @, 'before_process',
+    @runCallbacks 'before_process',
       (err, cb) -> do @[method]
       @next
 

@@ -2,27 +2,28 @@ cs        = require 'coffee-script'
 _         = require 'underscore'
 lingo     = require 'lingo'
 classkit  = require '../coffee_classkit'
-callbacks = require '../callbacks'
 
 module.exports = class Callbacks
   classkit.concern @
 
-  @included ->
-    callbacks.define @, 'before_process'
-    callbacks.define @, 'after_process'
+  classkit.include @, require '../callbacks'
+
+  @includedBlock = ->
+    @defineCallbacks 'before_process'
+    @defineCallbacks 'after_process'
 
   class @ClassMethods
-    ['before', 'after'].forEach (type) =>
+    for type in ['before', 'after']
       @::["#{type}Filter"] = eval cs.compile """
         ->
           [options, filter] = normalize_args arguments
-          callbacks.add @, "#{type}_process", options, filter
+          @setCallback "#{type}_process", options, filter
       """, bare: true
 
-      @::[lingo.camelcase "#skip_{type}_filter"] = eval cs.compile """
+      @::[lingo.camelcase "#skip #{type} filter"] = eval cs.compile """
         ->
           [options, filter] = normalize_args arguments
-          callbacks.skip @, "#{type}_process", options, filter
+          @skipCallback "#{type}_process", options, filter
       """, bare: true
 
   normalize_args = (args) ->

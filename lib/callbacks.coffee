@@ -3,50 +3,69 @@ _         = require 'underscore'
 flow      = require 'flow-coffee'
 classkit  = require './coffee_classkit'
 
-callbacks =
-  key: (name) -> "_#{name}_callbacks"
-  keyCompiled: (name) -> "_#{name}_callbacks_compiled"
+module.exports =
+class Callbacks
+  classkit.concern @
 
-  define: (klass, name) ->
-    classkit.instanceVariable @, callbacks.key name
-    klass[@key name] = []
-    @
+  class @ClassMethods
+    defineCallbacks: (name) ->
+      @[key name] = []
+      @
 
-  add: (klass, name, args...) ->
-    [options, filter] = classkit.findOptions args
-    item    = [[filter, @normalizeOptions options]]
-    origin  = klass[@key name]
-    klass[@key name] = if options.prepend
-     item.concat origin
-    else
-      origin.concat item
-    @compile klass, name
+    setCallback: (name, args...) ->
+      [options, filter] = classkit.findOptions args
+      item    = [[filter, normalize_options options]]
+      origin  = @[key name]
+      @[key name] = if options.prepend
+       item.concat origin
+      else
+        origin.concat item
+      @_compileCallbacks name
 
-  # options not supported
-  skip: (klass, name, args...) ->
-    [options, filter] = classkit.findOptions args
-    klass[@key name] = if filter
-      klass[@key name].filter ([item, options]) -> item != filter
-    else
-      []
-    @compile klass, name
+    # options not supported
+    skipCallback: (name, args...) ->
+      [options, filter] = classkit.findOptions args
+      @[key name] = if filter
+        @[key name].filter ([item, options]) -> item != filter
+      else
+        []
+      @_compileCallbacks name
 
-  compile: (klass, name) ->
-    klass[@keyCompiled name] = _.flatten(
-      for [filter, options] in klass[@key name]
-        if options.if.length or options.unless.length
-          [@compileOptions(options), filter]
-        else
-          [filter]
-    )
-    @
+    runCallbacks: (context, name, callback, error) ->
+      if (chain = @[key_compiled name])?.length
+        (new flow
+          context: context
+          blocks: chain.concat [callback]
+          error: error
+        ) null
+      else
+        callback.call context
+      @
 
-  normalizeOptions: (options) ->
+    _compileCallbacks: (name) ->
+      @[key_compiled name] = _.flatten(
+        for [filter, options] in @[key name]
+          if options.if.length or options.unless.length
+            [compile_options(options), filter]
+          else
+            [filter]
+      )
+      @
+
+  # instance methods
+  runCallbacks: (name, callback, error) ->
+    @constructor.runCallbacks @, name, callback, error
+
+  # helpers
+  key = (name) -> "_#{name}_callbacks"
+  key_compiled = (name) -> "_#{name}_callbacks_compiled"
+
+  normalize_options = (options) ->
     return options if typeof options is 'function'
     if:     _.compact _.flatten [options.if]
     unless: _.compact _.flatten [options.unless]
 
-  compileOptions: (options) ->
+  compile_options = (options) ->
     return options if typeof options is 'function'
     return options.when if options.when
     clauses = options.if
@@ -57,16 +76,3 @@ callbacks =
         cb.skip() unless #{clauses.join ' and '}
         cb.next args...
     """, bare: true
-
-  run: (klass, context, name, callback, error) ->
-    if (chain = klass[@keyCompiled name])?.length
-      (new flow
-        context: context
-        blocks: chain.concat [callback]
-        error: error
-      ) null
-    else
-      callback.call context
-    @
-
-module.exports = callbacks
