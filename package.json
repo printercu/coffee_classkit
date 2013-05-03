@@ -22,10 +22,13 @@
   ],
   "author": "Max Melentiev <melentievm@gmail.com>",
   "license": "BSD",
-  "devDependencies": {
-    "mocha": "*",
+  "dependencies": {
     "coffee-script": "*",
     "underscore": "*",
+    "lingo": "*",
     "flow-coffee": "*"
+  },
+  "devDependencies": {
+    "mocha": "*"
   }
 }
