@@ -10,32 +10,33 @@ classkit =
 
   extend: (object, mixin) ->
     if mixin.extendObject
-      mixin.extendObject object, @
+      mixin.extendObject object
     else
       @extendObject mixin, object
-    mixin.extended klass, @ if mixin.extended
+    mixin.extended klass if mixin.extended
     @
 
   extendObject: (mixin, object) ->
-    object[name] = method for name, method of mixin
+    object[name] = method for name, method of mixin::
     @
 
   include: (klass, mixin) ->
     if mixin.appendFeatures
-      mixin.appendFeatures klass, @
+      mixin.appendFeatures klass
     else
       @appendFeatures mixin, klass
-    mixin.included klass, @ if mixin.included
+    mixin.included klass if mixin.included
     @
 
   appendFeatures: (mixin, klass) ->
-    klass::[name] = method for name, method of mixin when name not in SKIP_IN_INCLUDE
-    @extend klass, mixin.ClassMethods if mixin.ClassMethods
+    for name, method of mixin::
+      klass::[name] = method if name not in SKIP_IN_INCLUDE
+    # @extend klass, mixin.ClassMethods if mixin.ClassMethods
     @
 
   concern: (klass) ->
     @instanceVariable klass, '_dependencies', []
-    @instanceVariable klass, '_included_block'
+    @instanceVariable klass, 'includedBlock'
 
     klass.appendFeatures = (base) ->
       if base._dependencies
@@ -45,11 +46,7 @@ classkit =
       classkit.include base, dep for dep in @_dependencies
       classkit.appendFeatures @, base
       classkit.extend base, @ClassMethods if @ClassMethods
-      @_included_block?.call base, classkit
-
-    klass.included = (fn) ->
-      @_included_block  = fn
-      # super?
+      @includedBlock?.call base, classkit
 
   isSubclass: (klass, other) ->
     while klass.__proto__

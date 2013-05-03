@@ -11,19 +11,19 @@ module.exports = class Callbacks
     callbacks.define @, 'before_process'
     callbacks.define @, 'after_process'
 
-  @ClassMethods = {}
-  ['before', 'after'].forEach (type) =>
-    @ClassMethods["#{type}Filter"] = eval cs.compile """
-      ->
-        [options, filter] = normalize_args arguments
-        callbacks.add @, "#{type}_process", options, filter
-    """, bare: true
+  class @ClassMethods
+    ['before', 'after'].forEach (type) =>
+      @::["#{type}Filter"] = eval cs.compile """
+        ->
+          [options, filter] = normalize_args arguments
+          callbacks.add @, "#{type}_process", options, filter
+      """, bare: true
 
-    @ClassMethods[lingo.camelcase "#skip_{type}_filter"] = eval cs.compile """
-      ->
-        [options, filter] = normalize_args arguments
-        callbacks.skip @, "#{type}_process", options, filter
-    """, bare: true
+      @::[lingo.camelcase "#skip_{type}_filter"] = eval cs.compile """
+        ->
+          [options, filter] = normalize_args arguments
+          callbacks.skip @, "#{type}_process", options, filter
+      """, bare: true
 
   normalize_args = (args) ->
     [options, filter] = classkit.findOptions args
