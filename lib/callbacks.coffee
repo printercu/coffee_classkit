@@ -10,6 +10,7 @@ callbacks =
   define: (klass, name) ->
     classkit.instanceVariable @, callbacks.key name
     klass[@key name] = []
+    @
 
   add: (klass, name, args...) ->
     [options, filter] = classkit.findOptions args
@@ -29,7 +30,6 @@ callbacks =
     else
       []
     @compile klass, name
-    @
 
   compile: (klass, name) ->
     klass[@keyCompiled name] = _.flatten(
@@ -39,6 +39,7 @@ callbacks =
         else
           [filter]
     )
+    @
 
   normalizeOptions: (options) ->
     return options if typeof options is 'function'
@@ -58,12 +59,14 @@ callbacks =
     """, bare: true
 
   run: (klass, context, name, callback, error) ->
-    return callback() unless (chain = klass[@keyCompiled name])?.length
-    (new flow
-      context: context
-      blocks: chain.concat [callback]
-      error: error
-    ) null
+    if (chain = klass[@keyCompiled name])?.length
+      (new flow
+        context: context
+        blocks: chain.concat [callback]
+        error: error
+      ) null
+    else
+      callback.call context
     @
 
 module.exports = callbacks
