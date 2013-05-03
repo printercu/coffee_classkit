@@ -8,9 +8,11 @@ module.exports = class AbstractController
 
   @abstract: true
 
-  @actionMethods: (reload) ->
-    if @hasOwnProperty('_actionMethods') and @_actionMethods? && !reload
-      return @_actionMethods
+  Object.defineProperty @, 'actionMethods', get: ->
+    @hasOwnProperty('_actionMethods') && @_actionMethods ||
+      @reloadActionMethods()
+
+  @reloadActionMethods: ->
     klass = @
     @_actionMethods = [].concat.apply([],
       while klass && !(klass.hasOwnProperty('abstract') && klass.abstract)
@@ -19,15 +21,23 @@ module.exports = class AbstractController
         methods
     ).filter (m) -> /^[^_].*Action$/.test m
 
+
   @dispatch: (req, res, next, action) ->
     method = action + 'Action'
-    return next 403 unless method in @actionMethods() #forbidden
-    controller = new @ req, res, next, action
-    callbacks.run @, controller, 'before_process', ->
-        controller[method]()
-      , next
+    unless method in @actionMethods
+      return next if req?.app?.set('env') is 'development'
+          new Error "Can not find action `#{action}` in `#{@name}`"
+        else
+          404 # not found
+    instance = new @ req, res, next, action
+    instance.process method
 
   constructor: (@req, @res, @next, @action) ->
+
+  process: (method) ->
+    callbacks.run @constructor, @, 'before_process',
+      (err, cb) -> do @[method]
+      @next
 
   prepareData: (data, callback) ->
     callback data

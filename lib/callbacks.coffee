@@ -11,8 +11,8 @@ callbacks =
     classkit.instanceVariable @, callbacks.key name
     klass[@key name] = []
 
-  add: (klass, name, args..., filter) ->
-    options = args[0] || {}
+  add: (klass, name, args...) ->
+    [options, filter] = classkit.findOptions args
     item    = [[filter, @normalizeOptions options]]
     origin  = klass[@key name]
     klass[@key name] = if options.prepend
@@ -22,8 +22,8 @@ callbacks =
     @compile klass, name
 
   # options not supported
-  skip: (klass, name, args..., filter) ->
-    options = args[0] || {}
+  skip: (klass, name, args...) ->
+    [options, filter] = classkit.findOptions args
     klass[@key name] = if filter
       klass[@key name].filter ([item, options]) -> item != filter
     else
@@ -50,18 +50,20 @@ callbacks =
     return options.when if options.when
     clauses = options.if
     clauses.push "!(#{options.unless.join ' and '})" if options.unless.length
-    cs.eval """
+    # OPTIMIZE: replace args... with err
+    eval cs.compile """
       (args..., cb) ->
         cb.skip() unless #{clauses.join ' and '}
-        cb args...
-    """
+        cb.next args...
+    """, bare: true
 
   run: (klass, context, name, callback, error) ->
     return callback() unless (chain = klass[@keyCompiled name])?.length
-    do new flow
+    (new flow
       context: context
       blocks: chain.concat [callback]
       error: error
+    ) null
     @
 
 module.exports = callbacks

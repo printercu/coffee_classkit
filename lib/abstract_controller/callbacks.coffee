@@ -1,4 +1,6 @@
+cs        = require 'coffee-script'
 _         = require 'underscore'
+lingo     = require 'lingo'
 classkit  = require '../coffee_classkit'
 callbacks = require '../callbacks'
 
@@ -9,30 +11,29 @@ module.exports = class Callbacks
     callbacks.define @, 'before_process'
     callbacks.define @, 'after_process'
 
-  @ClassMethods =
-    beforeFilter: (args..., filter) ->
-      options = args[0] || {}
-      callbacks.add @, 'before_process', normalize_options(options), filter
+  @ClassMethods = {}
+  ['before', 'after'].forEach (type) =>
+    @ClassMethods["#{type}Filter"] = eval cs.compile """
+      ->
+        [options, filter] = normalize_args arguments
+        callbacks.add @, "#{type}_process", options, filter
+    """, bare: true
 
-    skipBeforeFilter: (args..., filter) ->
-      options = args[0] || {}
-      callbacks.skip @, 'before_process', normalize_options(options), filter
+    @ClassMethods[lingo.camelcase "#skip_{type}_filter"] = eval cs.compile """
+      ->
+        [options, filter] = normalize_args arguments
+        callbacks.skip @, "#{type}_process", options, filter
+    """, bare: true
 
-    afterFilter: (args..., filter) ->
-      options = args[0] || {}
-      callbacks.add @, 'after_process', normalize_options(options), filter
-
-    skipAfterFilter: (args..., filter) ->
-      options = args[0] || {}
-      callbacks.skip @, 'after_process', normalize_options(options), filter
-
-  normalize_options = (options) ->
-    return options if typeof options is 'function'
-    if:     normalize_option options.only
-    unless: normalize_option options.except
-    when:   options.when
+  normalize_args = (args) ->
+    [options, filter] = classkit.findOptions args
+    [
+      if:     normalize_option options.only
+      unless: normalize_option options.except
+      when:   options.when
+      filter
+    ]
 
   normalize_option = (options) ->
-    (
-      "@action is '#{action}'" for action in _.compact _.flatten [options]
+    ("@action is '#{action}'" for action in _.compact _.flatten [options]
     ).join ' or '
