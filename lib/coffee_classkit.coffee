@@ -100,6 +100,23 @@ classkit =
       set: (val) -> data = val
     @
 
+  # aliasing
+
+  ###
+  # Unlike Ruby's method this one accepts original method name
+  # as first parameter.
+  ###
+  aliasMethod: (klass, from, to) ->
+    klass::[to] = klass::[from]
+    @
+
+  aliasMethodChain: (klass, method, feature) ->
+    feature = feature.charAt(0).toUpperCase() + feature.substr 1
+    method_with     = "#{method}With#{feature}"
+    method_without  = "#{method}Without#{feature}"
+    @aliasMethod klass, method, method_without
+    @aliasMethod klass, method_with, method
+
   ###
   # Provides all the classkit's methods as class methods. Use it as a top
   # of your classes hierarchy. Do not forget to call _extendsWithProto_ in
@@ -127,6 +144,8 @@ classkit =
       'concern'
       'classVariable'
       'instanceVariable'
+      'aliasMethod'
+      'aliasMethodChain'
     ]
     NOT_CHAINABLE_CLASSKIT_METHODS = [
       'isSubclass'
