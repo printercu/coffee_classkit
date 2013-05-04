@@ -3,10 +3,11 @@ _         = require 'underscore'
 lingo     = require 'lingo'
 classkit  = require '../coffee_classkit'
 
-module.exports = class Callbacks
-  classkit.concern @
+module.exports =
+class Callbacks extends classkit.Module
+  @extendsWithProto().concern()
 
-  classkit.include @, require '../callbacks'
+  @include require '../callbacks'
 
   @includedBlock = ->
     @defineCallbacks 'before_process'
@@ -20,12 +21,13 @@ module.exports = class Callbacks
           @setCallback "#{type}_process", options, filter
       """, bare: true
 
-      @::[lingo.camelcase "#skip #{type} filter"] = eval cs.compile """
+      @::[lingo.camelcase "skip #{type} filter"] = eval cs.compile """
         ->
           [options, filter] = normalize_args arguments
           @skipCallback "#{type}_process", options, filter
       """, bare: true
 
+  # private helpers
   normalize_args = (args) ->
     [options, filter] = classkit.findOptions args
     [

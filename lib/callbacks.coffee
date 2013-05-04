@@ -4,8 +4,8 @@ flow      = require 'flow-coffee'
 classkit  = require './coffee_classkit'
 
 module.exports =
-class Callbacks
-  classkit.concern @
+class Callbacks extends classkit.Module
+  @extendsWithProto().concern()
 
   class @ClassMethods
     defineCallbacks: (name) ->
@@ -22,7 +22,7 @@ class Callbacks
         origin.concat item
       @_compileCallbacks name
 
-    # options not supported
+    # TODO: support for options
     skipCallback: (name, args...) ->
       [options, filter] = classkit.findOptions args
       @[key name] = if filter
@@ -56,7 +56,7 @@ class Callbacks
   runCallbacks: (name, callback, error) ->
     @constructor.runCallbacks @, name, callback, error
 
-  # helpers
+  # private helpers
   key = (name) -> "_#{name}_callbacks"
   key_compiled = (name) -> "_#{name}_callbacks_compiled"
 

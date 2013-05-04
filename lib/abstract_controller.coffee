@@ -2,8 +2,11 @@ _         = require 'underscore'
 flow      = require 'flow-coffee'
 classkit  = require './coffee_classkit'
 
-module.exports = class AbstractController
-  classkit.include @, require('./abstract_controller/callbacks')
+# TODO: split it into few more concerns
+module.exports =
+class AbstractController extends classkit.Module
+  @extendsWithProto()
+  @include require './abstract_controller/callbacks'
 
   @abstract: true
 
@@ -11,6 +14,15 @@ module.exports = class AbstractController
     @hasOwnProperty('_actionMethods') && @_actionMethods ||
       @reloadActionMethods()
 
+  ###
+  # As of there are all methods are public in js, here is convention about
+  # action methods in controllers. Methods that don't start with
+  # `_` (underscore) and ends with `Action` are permited action methods.
+  #
+  # This will invoke _indexAction_ method in controller's instance:
+  #
+  #   ExampleController.dispatch req, res, next, 'index'
+  ###
   @reloadActionMethods: ->
     klass = @
     @_actionMethods = [].concat.apply([],
@@ -38,9 +50,13 @@ module.exports = class AbstractController
       (err, cb) -> do @[method]
       @next
 
-  prepareData: (data, callback) ->
-    callback data
-
+  ###
+  # Use it to define error handler for controller. Wrap any callback to handle
+  # only successful results.
+  #
+  #   db.get id, @handleErrors (err, data) ->
+  #     # here _err_ is always null
+  ###
   handleErrors: (fn) -> (err) =>
     return @next err if err
     fn.apply @, arguments
