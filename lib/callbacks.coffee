@@ -12,6 +12,14 @@ class Callbacks extends classkit.Module
       @[key name] = []
       @
 
+    ###
+    # TODO:
+    # On setting previously set callback new one is just prepending with
+    # new options. May be we should merge that callbacks into first one.
+    # But we woun't be able to declare duplicates...
+    #
+    # Find out how to extract skipped options. Maybe concat arrays with _or_.
+    ###
     setCallback: (name, args...) ->
       [options, filter] = classkit.findOptions args
       item    = [[filter, normalize_options options]]
@@ -22,11 +30,13 @@ class Callbacks extends classkit.Module
         origin.concat item
       @_compileCallbacks name
 
-    # TODO: support for options
     skipCallback: (name, args...) ->
-      [options, filter] = classkit.findOptions args
+      [skip_options, filter] = classkit.findOptions args
       @[key name] = if filter
-        @[key name].filter ([item, options]) -> item != filter
+        _.compact @[key name].map ([item, options]) ->
+          return item if item != filter
+          if new_options = merge_skipped_options options, skip_options
+            [item, new_options]
       else
         []
       @_compileCallbacks name
@@ -65,12 +75,18 @@ class Callbacks extends classkit.Module
     if:     _.compact _.flatten [options.if]
     unless: _.compact _.flatten [options.unless]
 
+  merge_skipped_options = (options, skipOptions) ->
+    skip_opts = normalize_options skipOptions
+    return false unless skip_opts.if.length or skip_opts.unless.length
+    if:     options.if.concat     skip_opts.unless
+    unless: options.unless.concat skip_opts.if
+
   compile_options = (options) ->
     return options if typeof options is 'function'
     return options.when if options.when
-    clauses = options.if
+    clauses = options.if.slice 0
     clauses.push "!(#{options.unless.join ' and '})" if options.unless.length
-    # OPTIMIZE: replace args... with err
+    # OPTIMIZE: replace args... with err ?
     eval cs.compile """
       (args..., cb) ->
         cb.skip() unless #{clauses.join ' and '}
