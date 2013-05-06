@@ -10,22 +10,29 @@ class Callbacks extends classkit.Module
   @include require '../callbacks'
 
   @includedBlock = ->
-    @defineCallbacks 'before_process'
-    @defineCallbacks 'after_process'
+    @defineCallbacks 'process'
+    @aliasMethodChain 'process', 'callbacks'
 
   class @ClassMethods
     for type in ['before', 'after']
       @::["#{type}Filter"] = eval cs.compile """
         ->
           [options, filter] = normalize_args arguments
-          @setCallback "#{type}_process", options, filter
+          @setCallback 'process', '#{type}', options, filter
       """, bare: true
 
       @::[lingo.camelcase "skip #{type} filter"] = eval cs.compile """
         ->
           [options, filter] = normalize_args arguments
-          @skipCallback "#{type}_process", options, filter
+          @skipCallback 'process', '#{type}', options, filter
       """, bare: true
+
+  # instance methods
+  processWithCallbacks: (method) ->
+    @runCallbacks 'process',
+      (err, flow) -> @processWithoutCallbacks method, flow
+      error:  @next
+      final:  @req.next
 
   # private helpers
   normalize_args = (args) ->

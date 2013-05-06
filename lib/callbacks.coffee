@@ -9,7 +9,9 @@ class Callbacks extends classkit.Module
 
   class @ClassMethods
     defineCallbacks: (name) ->
-      @[key name] = []
+      for type in ['before', 'after']
+        @[key name, type] = []
+        @_compileCallbacks name, type
       @
 
     ###
@@ -20,41 +22,47 @@ class Callbacks extends classkit.Module
     #
     # Find out how to extract skipped options. Maybe concat arrays with _or_.
     ###
-    setCallback: (name, args...) ->
+    setCallback: (name, type, args...) ->
       [options, filter] = classkit.findOptions args
       item    = [[filter, normalize_options options]]
-      origin  = @[key name]
-      @[key name] = if options.prepend
+      origin  = @[key name, type]
+      @[key name, type] = if options.prepend
        item.concat origin
       else
         origin.concat item
-      @_compileCallbacks name
+      @_compileCallbacks name, type
 
-    skipCallback: (name, args...) ->
+    skipCallback: (name, type, args...) ->
       [skip_options, filter] = classkit.findOptions args
-      @[key name] = if filter
-        _.compact @[key name].map ([item, options]) ->
+      @[key name, type] = if filter
+        _.compact @[key name, type].map ([item, options]) ->
           return item if item != filter
           if new_options = merge_skipped_options options, skip_options
             [item, new_options]
       else
         []
-      @_compileCallbacks name
+      @_compileCallbacks name, type
 
-    runCallbacks: (context, name, callback, error) ->
-      if (chain = @[key_compiled name])?.length
-        (new flow
-          context: context
-          blocks: chain.concat [callback]
-          error: error
-        ) null
-      else
-        callback.call context
-      @
+    runCallbacks: ->
+      (@prepareCallbacks arguments...) null
 
-    _compileCallbacks: (name) ->
-      @[key_compiled name] = _.flatten(
-        for [filter, options] in @[key name]
+    prepareCallbacks: (context, name, callback, options) ->
+      blocks = @[key_compiled name, 'before']
+        .concat [callback], @[key_compiled name, 'after']
+      flow_opts =
+        context:  context
+        blocks:   blocks
+      if options
+        if typeof options is 'object'
+          flow_opts.error = options.error if options.error
+          flow_opts.final = options.final if options.final
+        else
+          flow_opts.error = flow_opts.final = options
+      new flow flow_opts
+
+    _compileCallbacks: (name, type) ->
+      @[key_compiled name, type] = _.flatten(
+        for [filter, options] in @[key name, type]
           if options.if.length or options.unless.length
             [compile_options(options), filter]
           else
@@ -63,12 +71,15 @@ class Callbacks extends classkit.Module
       @
 
   # instance methods
-  runCallbacks: (name, callback, error) ->
-    @constructor.runCallbacks @, name, callback, error
+  runCallbacks: ->
+    (@prepareCallbacks arguments...) null
+
+  prepareCallbacks: (name, callback, options) ->
+    @constructor.prepareCallbacks @, name, callback, options
 
   # private helpers
-  key = (name) -> "_#{name}_callbacks"
-  key_compiled = (name) -> "_#{name}_callbacks_compiled"
+  key = (name, type) -> "_#{type}_#{name}_callbacks"
+  key_compiled = (name, type) -> "_#{type}_#{name}_callbacks_compiled"
 
   normalize_options = (options) ->
     return options if typeof options is 'function'
