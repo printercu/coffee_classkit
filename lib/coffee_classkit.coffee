@@ -47,8 +47,11 @@ classkit =
     @
 
   extendObject: (mixin, object) ->
-    for name, method of mixin::
-      object[name] = method if name not in SKIP_IN_EXTEND
+    @extendObject mixin.__super__.constructor, object if mixin.__super__
+    for name in Object.getOwnPropertyNames mixin::
+      continue if name in SKIP_IN_EXTEND
+      Object.defineProperty object, name,
+        Object.getOwnPropertyDescriptor mixin::, name
     @
 
   include: (klass, mixin) ->
@@ -60,8 +63,11 @@ classkit =
     @
 
   appendFeatures: (mixin, klass) ->
-    for name, method of mixin::
-      klass::[name] = method if name not in SKIP_IN_INCLUDE
+    @appendFeatures mixin.__super__.constructor, klass if mixin.__super__
+    for name in Object.getOwnPropertyNames mixin::
+      continue if name in SKIP_IN_INCLUDE
+      Object.defineProperty klass::, name,
+        Object.getOwnPropertyDescriptor mixin::, name
     @
 
   concern: (klass) ->

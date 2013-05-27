@@ -71,3 +71,44 @@ describe 'coffee_classkit', ->
 
     it 'last element is more preferable as options', ->
       assert.deepEqual classkit.findOptions([val3, val1, opts]), [opts, val3, val1]
+
+  describe '#appendFeatures', ->
+    it 'should process own properties', ->
+      class Mixin
+        value:  1
+        method: -> 2
+      class Target
+      classkit.appendFeatures Mixin, Target
+
+      assert.equal Target::value, Mixin::value
+      assert.equal Target::method, Mixin::method
+
+    it 'should process properties defined with Object.defineProperty', ->
+      class Mixin
+      Object.defineProperty Mixin::, 'prop', get: (->), set: (val) ->
+      class Target
+      classkit.appendFeatures Mixin, Target
+
+      assert.deepEqual Object.getOwnPropertyDescriptor(Target::, 'prop'),
+        Object.getOwnPropertyDescriptor(Mixin::, 'prop')
+
+    it 'should work with mixins that extends other mixins', ->
+      class Mixin
+        value:  1
+        method: -> 2
+      Object.defineProperty Mixin::, 'prop', get: (->), set: (val) ->
+      class ChildMixin extends Mixin
+      # classkit.extendsWithProto ChildMixin
+      class Target
+      classkit.appendFeatures ChildMixin, Target
+
+      assert.equal Target::value, Mixin::value
+      assert.equal Target::method, Mixin::method
+      assert.deepEqual Object.getOwnPropertyDescriptor(Target::, 'prop'),
+        Object.getOwnPropertyDescriptor(Mixin::, 'prop')
+
+  describe '#extendObject', ->
+
+
+  describe '#include', ->
+    it 'should call appendFeatures'

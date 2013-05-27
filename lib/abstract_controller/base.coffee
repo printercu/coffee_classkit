@@ -4,12 +4,11 @@ module.exports =
 class Base extends classkit.Module
   @extendsWithProto().concern()
 
-  @includedBlock = ->
-    Object.defineProperty @, 'actionMethods', get: ->
+  class @ClassMethods
+    Object.defineProperty @::, 'actionMethods', get: ->
       @hasOwnProperty('_actionMethods') && @_actionMethods ||
         @reloadActionMethods()
 
-  class @ClassMethods
     ###
     # As of there are all methods are public in js, here is convention about
     # action methods in controllers. Methods that don't start with
