@@ -26,6 +26,9 @@ class Callbacks extends classkit.Module
           [options, filter] = normalize_args arguments
           @skipCallback 'process', '#{type}', options, filter
       """, bare: true
+    # use it to show that this callback is using _flow.after_
+    classkit.aliasMethod @, 'aroundFilter', 'beforeFilter'
+    classkit.aliasMethod @, 'skipAroundFilter', 'skipBeforeFilter'
 
   # instance methods
   processWithCallbacks: (method) ->
