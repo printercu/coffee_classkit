@@ -101,12 +101,9 @@ classkit =
     @
 
   # aliasing
-
-  ###
-  # Unlike Ruby's method this one accepts original method name
-  # as first parameter.
-  ###
-  aliasMethod: (klass, from, to) ->
+  aliasMethod: (klass, to, from) ->
+    unless klass::[from]?
+      throw new Error "No such method #{klass.name}::#{from}"
     klass::[to] = klass::[from]
     @
 
@@ -114,8 +111,8 @@ classkit =
     feature = feature.charAt(0).toUpperCase() + feature.substr 1
     method_with     = "#{method}With#{feature}"
     method_without  = "#{method}Without#{feature}"
-    @aliasMethod klass, method, method_without
-    @aliasMethod klass, method_with, method
+    @aliasMethod klass, method_without, method
+    @aliasMethod klass, method, method_with
 
   ###
   # Provides all the classkit's methods as class methods. Use it as a top
