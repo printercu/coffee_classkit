@@ -70,6 +70,36 @@ classkit =
         Object.getOwnPropertyDescriptor mixin::, name
     @
 
+  ###
+  # ActiveSupport::Concern's analog
+  #
+  #   class Mixin
+  #     classkit.concern @
+  #
+  #     @includedBlock = ->
+  #       # here is context of base class
+  #       @defineCallbacks 'action'
+  #
+  #     class @ClassMethods
+  #       someClassMethod: ->
+  #         # ...
+  #
+  #     # instance methods
+  #     someInstanceMethod: ->
+  #       # ...
+  #
+  #   class Base
+  #     classkit.extendsWithProto @
+  #     classkit.include @, Mixin
+  #     # callbacks are already defined
+  #
+  #     # use class methods
+  #     @someClassMthod()
+  #
+  #   # use instance methods
+  #   obj = new Base
+  #   obj.someInstanceMethod()
+  ###
   concern: (klass) ->
     @instanceVariable klass, '_dependencies', []
     @instanceVariable klass, 'includedBlock'
