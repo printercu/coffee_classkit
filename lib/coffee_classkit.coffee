@@ -4,7 +4,7 @@ classkit =
   # to override js & coffee-script inferitance model.
   #
   # We also need to skip _extendsWithProto_ in extend. It allows to call it
-  # from class that not extending _classkit.ClasskitModule_.
+  # from class that not extending _classkit.Module_.
   ###
   SKIP_IN_EXTEND:  SKIP_IN_EXTEND  = ['__super__', 'extendsWithProto']
   SKIP_IN_INCLUDE: SKIP_IN_INCLUDE = ['constructor']
@@ -21,14 +21,14 @@ classkit =
   # on each class where you need this functionality.
   #
   #   class Parent
-  #     @param: 1
+  #     @attr: 1
   #
   #   class Child extends Parent
   #     classkit.extendsWithProto @
   #
-  #   Child.hasOwnProperty('param')
+  #   Child.hasOwnProperty('attr')
   #   # => false
-  #   Child.param
+  #   Child.attr
   #   # => 1
   ###
   extendsWithProto: (klass)->
