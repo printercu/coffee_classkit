@@ -6,8 +6,8 @@ classkit =
   # We also need to skip _extendsWithProto_ in extend. It allows to call it
   # from class that not extending _classkit.Module_.
   ###
-  SKIP_IN_EXTEND:  SKIP_IN_EXTEND  = ['__super__', 'extendsWithProto']
-  SKIP_IN_INCLUDE: SKIP_IN_INCLUDE = ['constructor']
+  SKIP_IN_EXTEND:   ['__super__', 'extendsWithProto']
+  SKIP_IN_INCLUDE:  ['constructor']
 
   ###
   # Inheritance
@@ -33,7 +33,7 @@ classkit =
   ###
   extendsWithProto: (klass)->
     for name of klass
-      if klass.hasOwnProperty(name) && name not in SKIP_IN_EXTEND
+      if klass.hasOwnProperty(name) && name not in @SKIP_IN_EXTEND
         delete klass[name]
     klass.__proto__ = klass.__super__.constructor if klass.__super__
     @
@@ -49,7 +49,7 @@ classkit =
   extendObject: (mixin, object) ->
     @extendObject mixin.__super__.constructor, object if mixin.__super__
     for name in Object.getOwnPropertyNames mixin::
-      continue if name in SKIP_IN_EXTEND
+      continue if name in @SKIP_IN_EXTEND
       Object.defineProperty object, name,
         Object.getOwnPropertyDescriptor mixin::, name
     @
@@ -65,7 +65,7 @@ classkit =
   appendFeatures: (mixin, klass) ->
     @appendFeatures mixin.__super__.constructor, klass if mixin.__super__
     for name in Object.getOwnPropertyNames mixin::
-      continue if name in SKIP_IN_INCLUDE
+      continue if name in @SKIP_IN_INCLUDE
       Object.defineProperty klass::, name,
         Object.getOwnPropertyDescriptor mixin::, name
     @
