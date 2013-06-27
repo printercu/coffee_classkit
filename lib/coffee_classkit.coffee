@@ -139,7 +139,7 @@ classkit =
   # aliasing
   aliasMethod: (klass, to, from) ->
     unless klass::[from]?
-      throw new Error "No such method #{klass.name}::#{from}"
+      throw new Error "No such method #{klass.name}##{from}"
     klass::[to] = klass::[from]
     @
 
@@ -149,6 +149,18 @@ classkit =
     method_without  = "#{method}Without#{feature}"
     @aliasMethod klass, method_without, method
     @aliasMethod klass, method, method_with
+
+  # misc
+  requireAll: (module, args...) ->
+    [options, mixins...] = @findOptions args
+    prefix = "#{options.prefix}/" if options.prefix?
+    module.require "#{prefix}#{mixin}" for mixin in mixins
+
+  includeAll: (klass, args...) ->
+    @include klass, module for module in @requireAll args...
+
+  extendAll: ->
+    @extend klass, module for module in @requireAll args...
 
   ###
   # Provides all the classkit's methods as class methods. Use it as a top
@@ -179,6 +191,8 @@ classkit =
       'instanceVariable'
       'aliasMethod'
       'aliasMethodChain'
+      'includeAll'
+      'extendAll'
     ]
     NOT_CHAINABLE_CLASSKIT_METHODS = [
       'isSubclass'
