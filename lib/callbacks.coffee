@@ -27,7 +27,7 @@ class Callbacks extends classkit.Module
       item    = [[filter, normalize_options options]]
       origin  = @[key name, type]
       @[key name, type] = if options.prepend
-       item.concat origin
+        item.concat origin
       else
         origin.concat item
       @_compileCallbacks name, type
@@ -36,7 +36,7 @@ class Callbacks extends classkit.Module
       [skip_options, filter] = classkit.findOptions args
       @[key name, type] = if filter
         _.compact @[key name, type].map ([item, options]) ->
-          return item if item != filter
+          return arguments[0] if item != filter
           if new_options = merge_skipped_options options, skip_options
             [item, new_options]
       else
@@ -57,7 +57,8 @@ class Callbacks extends classkit.Module
           flow_opts.error = options.error if options.error
           flow_opts.final = options.final if options.final
         else
-          flow_opts.error = flow_opts.final = options
+          flow_opts.error = options
+          flow_opts.final = -> options.apply(context, [null].concat(Array::slice.call(arguments)))
       new flow flow_opts
 
     _compileCallbacks: (name, type) ->

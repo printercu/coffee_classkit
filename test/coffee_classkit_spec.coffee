@@ -3,7 +3,7 @@ classkit  = require '../lib/coffee_classkit'
 
 describe 'coffee_classkit', ->
   describe '#extendsWithProto', ->
-    it 'should keep child`s own properties clean', ->
+    it 'keeps child`s own properties clean', ->
       class A
         @x = -> true
       class B extends A
@@ -15,7 +15,7 @@ describe 'coffee_classkit', ->
       assert.equal B.x(), true
 
   describe '#instanceVariable', ->
-    it 'should define getter & setter for non-inheritable property', ->
+    it 'defines getter & setter for non-inheritable property', ->
       class A
         classkit.instanceVariable @, 'x'
         @x = 1
@@ -52,28 +52,28 @@ describe 'coffee_classkit', ->
     val2  = 'val2'
     val3  = val: 'val'
 
-    it 'should return [{}] if nothing or empty array is given', ->
+    it 'returns [{}] if nothing or empty array is given', ->
       assert.deepEqual classkit.findOptions(), [{}]
       assert.deepEqual classkit.findOptions([]), [{}]
 
-    it 'should work if input array has one element', ->
+    it 'works if input array has one element', ->
       assert.deepEqual classkit.findOptions([opts]), [opts]
       assert.deepEqual classkit.findOptions([val1]), [{}, val1]
 
-    it 'should work if input array has two elements', ->
+    it 'works if input array has two elements', ->
       assert.deepEqual classkit.findOptions([opts, val1]), [opts, val1]
       assert.deepEqual classkit.findOptions([val1, opts]), [opts, val1]
 
-    it 'should work if input array has more elements', ->
+    it 'works if input array has more elements', ->
       assert.deepEqual classkit.findOptions([opts, val1, val2]), [opts, val1, val2]
       assert.deepEqual classkit.findOptions([val1, val2, opts]), [opts, val1, val2]
       assert.deepEqual classkit.findOptions([val1, val3, val2]), [{}, val1, val3, val2]
 
-    it 'last element is more preferable as options', ->
+    it 'returns last element as options if first is an object too', ->
       assert.deepEqual classkit.findOptions([val3, val1, opts]), [opts, val3, val1]
 
   describe '#appendFeatures', ->
-    it 'should process own properties', ->
+    it 'processes own properties', ->
       class Mixin
         value:  1
         method: -> 2
@@ -83,7 +83,7 @@ describe 'coffee_classkit', ->
       assert.equal Target::value, Mixin::value
       assert.equal Target::method, Mixin::method
 
-    it 'should process properties defined with Object.defineProperty', ->
+    it 'processes properties defined with Object.defineProperty', ->
       class Mixin
       Object.defineProperty Mixin::, 'prop', get: (->), set: (val) ->
       class Target
@@ -92,7 +92,7 @@ describe 'coffee_classkit', ->
       assert.deepEqual Object.getOwnPropertyDescriptor(Target::, 'prop'),
         Object.getOwnPropertyDescriptor(Mixin::, 'prop')
 
-    it 'should work with mixins that extends other mixins', ->
+    it 'works with mixins that extends other mixins', ->
       class Mixin
         value:  1
         method: -> 2
@@ -109,6 +109,4 @@ describe 'coffee_classkit', ->
 
   describe '#extendObject', ->
 
-
   describe '#include', ->
-    it 'should call appendFeatures'

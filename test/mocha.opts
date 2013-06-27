@@ -1,1 +1,4 @@
--C --compilers coffee:coffee-script
+--colors
+--compilers coffee:coffee-script
+--check-leaks
+--recursive
