@@ -136,6 +136,13 @@ classkit =
       set: (val) -> data = val
     @
 
+  classAttribute: (obj, name, data) ->
+    obj[name] = data
+    private_name = "_#{name}"
+    Object.defineProperty obj::, name,
+      get: -> if @hasOwnProperty(private_name) then @[private_name] else @constructor[name]
+      set: (value) -> @[private_name] = value
+
   # aliasing
   aliasMethod: (klass, to, from) ->
     unless klass::[from]?
@@ -187,8 +194,9 @@ classkit =
       'include'
       'appendFeatures'
       'concern'
-      'classVariable'
       'instanceVariable'
+      'classVariable'
+      'classAttribute'
       'aliasMethod'
       'aliasMethodChain'
       'includeAll'

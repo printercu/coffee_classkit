@@ -46,6 +46,43 @@ describe 'coffee_classkit', ->
       assert.equal B.x, 2
       assert.equal C.x, 2
 
+  describe '#classAttribute', ->
+    beforeEach ->
+      class @A
+        classkit.classAttribute @, 'attr', 1
+      class @B extends @A
+        classkit.extendsWithProto @
+
+    it 'makes instances return class attribute`s value', ->
+      assert.equal @A.attr,       1
+      assert.equal new @A().attr, 1
+      @A.attr = 2
+      assert.equal @A.attr,       2
+      assert.equal new @A().attr, 2
+
+    it 'makes child inherit parent`s attribute value', ->
+      assert.equal @B.attr,       1
+      assert.equal new @B().attr, 1
+      @A.attr = 2
+      assert.equal @B.attr,       2
+      assert.equal new @B().attr, 2
+
+    it 'allows child to override parent`s value', ->
+      @B.attr = 2
+      assert.equal @A.attr,       1
+      assert.equal new @A().attr, 1
+      assert.equal @B.attr,       2
+      assert.equal new @B().attr, 2
+
+    it 'allows instance to override class`es attribute', ->
+      (a = new @A).attr = 2
+      @B.attr = 3
+      (b = new @B).attr = 4
+      assert.equal @A.attr, 1
+      assert.equal a.attr,  2
+      assert.equal @B.attr, 3
+      assert.equal b.attr,  4
+
   describe '#findOptions', ->
     opts  = opts: 'opts'
     val1  = 'val1'
