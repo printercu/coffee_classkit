@@ -159,7 +159,7 @@ classkit =
 
   # misc
   requireAll: (module, args...) ->
-    [options, mixins...] = @findOptions args
+    [options, mixins] = @findOptions args
     prefix = "#{options.prefix}/" if options.prefix?
     module.require "#{prefix}#{mixin}" for mixin in mixins
 
@@ -226,17 +226,17 @@ classkit =
   #     # ...
   #   # => [{opt: 'val'}, function]
   #
-  # Supports one argument as array (or arguments object) or multiple
+  # Supports one argument as array or arguments object
   ###
   findOptions: (args) ->
-    args = arguments if arguments.length > 1
-    return [{}] unless args?.length
-    if typeof (last = args[args.length - 1]) is 'object'
-      [last, Array::slice.call(args, 0, args.length - 1)...]
+    return [{}, []] unless args?.length
+    last_id = args.length - 1
+    if typeof (last = args[last_id]) is 'object'
+      [last, Array::slice.call(args, 0, last_id)]
     else if typeof args[0] is 'object'
-      args
+      [args[0], Array::slice.call(args, 1)]
     else
-      [{}, args...]
+      [{}, Array::slice.call args]
 
 # export
 if module?.exports
