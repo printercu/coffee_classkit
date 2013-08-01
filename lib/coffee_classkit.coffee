@@ -1,21 +1,16 @@
-classkit =
-  ###
+classkit = class Classkit
+  # # Inheritance
+  # Under development.
+  # No docs yet. See ruby analogs.
+
   # Here are defined fields to skip while performing _include_ & _extend_ not
   # to override js & coffee-script inferitance model.
   #
   # We also need to skip _extendsWithProto_ in extend. It allows to call it
   # from class that not extending _classkit.Module_.
-  ###
-  SKIP_IN_EXTEND:   ['__super__', 'extendsWithProto']
-  SKIP_IN_INCLUDE:  ['constructor']
+  @SKIP_IN_EXTEND:   ['__super__', 'extendsWithProto']
+  @SKIP_IN_INCLUDE:  ['constructor']
 
-  ###
-  # Inheritance
-  # Under development.
-  # No docs yet. See ruby analogs.
-  ###
-
-  ###
   # Makes class methods inherited by prototype chain.
   # Sadly it cannot be performed automaticaly, so you need call this method
   # on each class where you need this functionality.
@@ -30,15 +25,14 @@ classkit =
   #   # => false
   #   Child.attr
   #   # => 1
-  ###
-  extendsWithProto: (klass)->
+  @extendsWithProto: (klass)->
     for name of klass
       if klass.hasOwnProperty(name) && name not in @SKIP_IN_EXTEND
         delete klass[name]
     klass.__proto__ = klass.__super__.constructor if klass.__super__
     @
 
-  extend: (object, mixin) ->
+  @extend: (object, mixin) ->
     if mixin.extendObject
       mixin.extendObject object
     else
@@ -46,7 +40,7 @@ classkit =
     mixin.extended? klass
     @
 
-  extendObject: (mixin, object) ->
+  @extendObject: (mixin, object) ->
     @extendObject mixin.__super__.constructor, object if mixin.__super__
     for name in Object.getOwnPropertyNames mixin::
       continue if name in @SKIP_IN_EXTEND
@@ -54,7 +48,7 @@ classkit =
         Object.getOwnPropertyDescriptor mixin::, name
     @
 
-  include: (klass, mixin) ->
+  @include: (klass, mixin) ->
     if mixin.appendFeatures
       mixin.appendFeatures klass
     else
@@ -62,7 +56,7 @@ classkit =
     mixin.included? klass
     @
 
-  appendFeatures: (mixin, klass) ->
+  @appendFeatures: (mixin, klass) ->
     @appendFeatures mixin.__super__.constructor, klass if mixin.__super__
     for name in Object.getOwnPropertyNames mixin::
       continue if name in @SKIP_IN_INCLUDE
@@ -70,8 +64,7 @@ classkit =
         Object.getOwnPropertyDescriptor mixin::, name
     @
 
-  ###
-  # ActiveSupport::Concern's analog
+  # ActiveSupport::Concern's analog.
   #
   #   class Mixin
   #     classkit.concern @
@@ -99,8 +92,7 @@ classkit =
   #   # use instance methods
   #   obj = new Base
   #   obj.someInstanceMethod()
-  ###
-  concern: (klass) ->
+  @concern: (klass) ->
     @instanceVariable klass, '_dependencies', []
     @instanceVariable klass, 'includedBlock'
 
@@ -115,14 +107,14 @@ classkit =
       @includedBlock?.call base, classkit
     @
 
-  isSubclass: (klass, other) ->
+  @isSubclass: (klass, other) ->
     while klass.__proto__
       return true if klass.__proto__ is other
       klass = klass.__proto__
     false
 
-  # variables
-  instanceVariable: (obj, name, val) ->
+  # # Variables
+  @instanceVariable: (obj, name, val) ->
     private_name = "_#{name}"
     Object.defineProperty obj, name,
       get: -> @[private_name] if @hasOwnProperty private_name
@@ -130,49 +122,76 @@ classkit =
     obj[name] = val
     @
 
-  classVariable: (obj, name, data) ->
+  @classVariable: (obj, name, data) ->
     Object.defineProperty obj, name,
       get: -> data
       set: (val) -> data = val
     @
 
-  classAttribute: (obj, name, data) ->
+  @classAttribute: (obj, name, data) ->
     obj[name] = data
     private_name = "_#{name}"
     Object.defineProperty obj::, name,
       get: -> if @hasOwnProperty(private_name) then @[private_name] else @constructor[name]
       set: (value) -> @[private_name] = value
 
-  # aliasing
-  aliasMethod: (klass, to, from) ->
+  # # Aliasing
+  @aliasMethod: (klass, to, from) ->
     unless klass::[from]?
       throw new Error "No such method #{klass.name}##{from}"
     klass::[to] = klass::[from]
     @
 
-  aliasMethodChain: (klass, method, feature) ->
+  @aliasMethodChain: (klass, method, feature) ->
     feature = feature.charAt(0).toUpperCase() + feature.substr 1
     method_with     = "#{method}With#{feature}"
     method_without  = "#{method}Without#{feature}"
     @aliasMethod klass, method_without, method
     @aliasMethod klass, method, method_with
 
-  # misc
-  requireAll: (module, args...) ->
+  # # Misc
+  @requireAll: (module, args...) ->
     [options, mixins] = @findOptions args
     prefix = "#{options.prefix}/" if options.prefix?
     module.require "#{prefix}#{mixin}" for mixin in mixins
 
-  includeAll: (klass, args...) ->
+  @includeAll: (klass, args...) ->
     @include klass, module for module in @requireAll args...
 
-  extendAll: ->
+  @extendAll: ->
     @extend klass, module for module in @requireAll args...
 
-  ###
-  # Provides all the classkit's methods as class methods. Use it as a top
-  # of your classes hierarchy. Do not forget to call _extendsWithProto_ in
-  # inherited classes.
+  @CHAINABLE_CLASSKIT_METHODS: [
+    'extendsWithProto'
+    'extend'
+    'extendObject'
+    'include'
+    'appendFeatures'
+    'concern'
+    'instanceVariable'
+    'classVariable'
+    'classAttribute'
+    'aliasMethod'
+    'aliasMethodChain'
+    'includeAll'
+    'extendAll'
+  ]
+
+  @NOT_CHAINABLE_CLASSKIT_METHODS: [
+    'isSubclass'
+  ]
+
+  # Injects all classkit methods as class methods into target.
+  @inject: (klass) ->
+    @CHAINABLE_CLASSKIT_METHODS.forEach (method) ->
+      klass[method] = ->
+        classkit[method] @, arguments...
+        @
+    @NOT_CHAINABLE_CLASSKIT_METHODS.forEach (method) ->
+      klass[method] = -> classkit[method] @, arguments...
+
+  # Simple class with injected methods. Use it as a top of your class hierarchy.
+  # Do not forget to call _extendsWithProto_ in inherited classes.
   #
   # Common ussage:
   #
@@ -185,50 +204,24 @@ classkit =
   #   class Child extends Parent
   #     @extendsWithProto()
   #     @include Mixin
-  ###
-  Module: class Module
-    CHAINABLE_CLASSKIT_METHODS = [
-      'extendsWithProto'
-      'extend'
-      'extendObject'
-      'include'
-      'appendFeatures'
-      'concern'
-      'instanceVariable'
-      'classVariable'
-      'classAttribute'
-      'aliasMethod'
-      'aliasMethodChain'
-      'includeAll'
-      'extendAll'
-    ]
-    NOT_CHAINABLE_CLASSKIT_METHODS = [
-      'isSubclass'
-    ]
-    CHAINABLE_CLASSKIT_METHODS.forEach (method) =>
-      @[method] = ->
-        classkit[method] @, arguments...
-        @
-    NOT_CHAINABLE_CLASSKIT_METHODS.forEach (method) =>
-      @[method] = -> classkit[method] @, arguments...
+  @Module: class Module
+  @inject @Module
 
   # TODO: move helpers out
-  # helpers
+  # # Helpers
 
-  ###
-  # Returns _[options, other_args...]_. Options are taken from first or last
+  # Returns _[options, [other_args]]_. Options are taken from first or last
   # element if it's object. Last element is prefered. If they are not objects
   # _{}_ is returned in place of _options_.
   #
   #   classkit.findOptions param, opt: 'val'
-  #   # => [{opt: 'val'}, param]
+  #   # => [{opt: 'val'}, [param]]
   #   classkit.findOptiona opt: 'val', ->
   #     # ...
-  #   # => [{opt: 'val'}, function]
+  #   # => [{opt: 'val'}, [function]]
   #
   # Supports one argument as array or arguments object
-  ###
-  findOptions: (args) ->
+  @findOptions: (args) ->
     return [{}, []] unless args?.length
     last_id = args.length - 1
     if typeof (last = args[last_id]) is 'object'
