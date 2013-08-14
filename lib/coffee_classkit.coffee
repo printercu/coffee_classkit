@@ -29,7 +29,9 @@ classkit = class Classkit
     for name of klass
       if klass.hasOwnProperty(name) && name not in @SKIP_IN_EXTEND
         delete klass[name]
-    klass.__proto__ = klass.__super__.constructor if klass.__super__
+    if klass.__super__
+      klass.__proto__ = klass.__super__.constructor
+      klass.__proto__.inherited? klass
     @
 
   @extend: (object, mixin) ->

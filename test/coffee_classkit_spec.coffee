@@ -18,6 +18,22 @@ describe 'coffee_classkit', ->
     it 'sets parent as prototype of ancestor', ->
       assert.deepEqual @B.__proto__, @A
 
+    it 'runs _inherited_ hook', ->
+      class X
+        @inherited = (subclass) ->
+          assert.equal @, X
+          assert.equal subclass.xattr, X.xattr
+          subclass.yattr = true
+
+        @xattr: {a: 1}
+
+      class Y extends X
+        classkit.extendsWithProto @
+
+      assert.equal X.yattr, null
+      assert Y.yattr
+
+
   describe '#instanceVariable', ->
     beforeEach ->
       class @A
@@ -127,6 +143,38 @@ describe 'coffee_classkit', ->
   describe '#extendObject', ->
 
   describe '#include', ->
+    it 'calls mixin`s ::appendFeatures', ->
+      class Mixin
+        @appendFeatures: (base) ->
+          assert.equal @, Mixin
+          base.x = 1
+
+        y: 2
+
+      class Base
+      classkit.include Base, Mixin
+
+      assert.equal Base.x, 1
+      assert.equal Base::x, null
+      assert.equal Base.y, null
+      assert.equal Base::y, null
+
+  describe '#extend', ->
+    it 'calls mixin`s ::extendObject', ->
+      class Mixin
+        @extendObject: (base) ->
+          assert.equal @, Mixin
+          base::x = 1
+
+        y: 2
+
+      class Base
+      classkit.extend Base, Mixin
+
+      assert.equal Base.x, null
+      assert.equal Base::x, 1
+      assert.equal Base.y, null
+      assert.equal Base::y, null
 
   describe '#findOptions', ->
     opts  = opts: 'opts'
