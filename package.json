@@ -2,7 +2,7 @@
   "name": "coffee_classkit",
   "version": "0.4.0",
   "description": "Utilities for coffee-script classes",
-  "main": "lib/coffee_classkit.coffee",
+  "main": "coffee_classkit.coffee",
   "directories": {
     "lib": "lib",
     "test": "test"

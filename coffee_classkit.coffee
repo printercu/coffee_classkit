@@ -3,8 +3,8 @@ classkit = class Classkit
   # Under development.
   # No docs yet. See ruby analogs.
 
-  # Here are defined fields to skip while performing _include_ & _extend_ not
-  # to override js & coffee-script inferitance model.
+  # This fields should be skipped when _include_ & _extend_ are performed not
+  # to override js & coffee inheritance model.
   #
   # We also need to skip _extendsWithProto_ in extend. It allows to call it
   # from class that not extending _classkit.Module_.

@@ -1,5 +1,5 @@
 assert    = require 'assert'
-classkit  = require '../lib/coffee_classkit'
+classkit  = require '../'
 
 describe 'coffee_classkit', ->
   describe '#extendsWithProto', ->

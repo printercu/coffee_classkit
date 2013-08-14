@@ -31,7 +31,7 @@ Once you use `extendsWithProto` you should use it on all descendents.
 * It works only 'cause of `__proto__`. Some say it's deprecated :)
 
 ## Examples
-See tests for examples.
+See source, tests & [costa](https://github.com/printercu/costa).
 
 ## License
 BSD
