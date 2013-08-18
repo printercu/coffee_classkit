@@ -152,10 +152,13 @@ classkit = class Classkit
     @aliasMethod klass, method, method_with
 
   # # Misc
-  @requireAll: (module, args...) ->
-    [options, mixins] = @findOptions args
+  @requireAll: (module, mixins...) ->
+    options = if typeof mixins[0] is 'object'
+      mixins.shift()
+    else
+      {}
     prefix = "#{options.prefix}/" if options.prefix?
-    module.require "#{prefix}#{mixin}" for mixin in mixins
+    module.require "#{prefix ? ''}#{mixin}" for mixin in mixins
 
   @includeAll: (klass, args...) ->
     @include klass, module for module in @requireAll args...
@@ -208,30 +211,6 @@ classkit = class Classkit
   #     @include Mixin
   @Module: class Module
   @inject @Module
-
-  # TODO: move helpers out
-  # # Helpers
-
-  # Returns _[options, [other_args]]_. Options are taken from first or last
-  # element if it's object. Last element is prefered. If they are not objects
-  # _{}_ is returned in place of _options_.
-  #
-  #   classkit.findOptions param, opt: 'val'
-  #   # => [{opt: 'val'}, [param]]
-  #   classkit.findOptiona opt: 'val', ->
-  #     # ...
-  #   # => [{opt: 'val'}, [function]]
-  #
-  # Supports one argument as array or arguments object
-  @findOptions: (args) ->
-    return [{}, []] unless args?.length
-    last_id = args.length - 1
-    if typeof (last = args[last_id]) is 'object'
-      [last, Array::slice.call(args, 0, last_id)]
-    else if typeof args[0] is 'object'
-      [args[0], Array::slice.call(args, 1)]
-    else
-      [{}, Array::slice.call args]
 
 # export
 if module?.exports
