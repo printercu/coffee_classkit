@@ -34,6 +34,12 @@ classkit = class Classkit
       klass.__proto__.inherited? klass
     @
 
+  @_copy_props: (object, mixin) ->
+    for name in Object.getOwnPropertyNames mixin::
+      continue if name in @SKIP_IN_INCLUDE
+      Object.defineProperty object, name,
+        Object.getOwnPropertyDescriptor mixin::, name
+
   @extend: (object, mixin) ->
     if mixin.extendObject
       mixin.extendObject object
@@ -44,10 +50,7 @@ classkit = class Classkit
 
   @extendObject: (mixin, object) ->
     @extendObject mixin.__super__.constructor, object if mixin.__super__
-    for name in Object.getOwnPropertyNames mixin::
-      continue if name in @SKIP_IN_EXTEND
-      Object.defineProperty object, name,
-        Object.getOwnPropertyDescriptor mixin::, name
+    @_copy_props object, mixin
     @
 
   @include: (klass, mixin) ->
@@ -60,10 +63,7 @@ classkit = class Classkit
 
   @appendFeatures: (mixin, klass) ->
     @appendFeatures mixin.__super__.constructor, klass if mixin.__super__
-    for name in Object.getOwnPropertyNames mixin::
-      continue if name in @SKIP_IN_INCLUDE
-      Object.defineProperty klass::, name,
-        Object.getOwnPropertyDescriptor mixin::, name
+    @_copy_props klass::, mixin
     @
 
   # ActiveSupport::Concern's analog.
