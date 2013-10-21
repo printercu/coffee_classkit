@@ -38,11 +38,14 @@ describe 'coffee_classkit', ->
     beforeEach ->
       class @A
         classkit.instanceVariable @, 'x'
-        @x = 1
       class @B extends @A
         classkit.extendsWithProto @
 
+    it 'defines attr which is undefined', ->
+      assert.equal @A.x, undefined
+
     it 'defines getter & setter for non-inheritable property', ->
+      @A.x = 1
       assert.equal @A.x, 1
       assert.equal @B.x, undefined
       @B.x = 2
@@ -53,13 +56,16 @@ describe 'coffee_classkit', ->
     beforeEach ->
       class @A
         classkit.classVariable @, 'x'
-        @x = 1
       class @B extends @A
         classkit.extendsWithProto @
       class @C extends @B
         classkit.extendsWithProto @
 
+    it 'defines attr which is undefined', ->
+      assert.equal @A.x, undefined
+
     it 'allows all descendants have access to single value', ->
+      @A.x = 1
       assert.equal @A.x, 1
       assert.equal @B.x, 1
       assert.equal @C.x, 1
@@ -71,7 +77,8 @@ describe 'coffee_classkit', ->
   describe '#classAttribute', ->
     beforeEach ->
       class @A
-        classkit.classAttribute @, 'attr', 1
+        classkit.classAttribute @, 'attr'
+        @attr = 1
       class @B extends @A
         classkit.extendsWithProto @
 

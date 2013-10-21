@@ -1,6 +1,6 @@
 {
   "name": "coffee_classkit",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Utilities for coffee-script classes",
   "main": "coffee_classkit.coffee",
   "directories": {

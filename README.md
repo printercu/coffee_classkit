@@ -15,24 +15,24 @@ class Child extends Parent
 # ###
 class Mixin extends classkit.Module
   @extendsWithProto().concern()
-  
+
   @includedBlock: ->
     # will run in context of base class
     @instanceVariable 'test'
-  
+
   class @ClassMethods
     someClassMethod: ->
-    
+
   someInstanceMethod: ->
-  
+
 class Base extends classkit.Module
-  @include Mixin
-  
+  @extendsWithProto().include Mixin
+
   @someClassMethod()
-  
+
 (new Base).someInstanceMethod()
 ```
-  
+
 ## Why
 
 `class ... extends ...` is implemented in coffee with
@@ -63,7 +63,7 @@ Once you use `extendsWithProto` you should use it on all descendents.
 
 * It doesn't break into global namespace.
 * Works on a top of usual coffee-script class declaration.
-* Classes uses prototypes chain.
+* Classes use prototypes chain.
 * Full callbacks stack of Ruby-like inheritance model (`included`,
   `append_features`, `extend_object`, etc).
 * Helpers to define ruby-like instance & class variables.

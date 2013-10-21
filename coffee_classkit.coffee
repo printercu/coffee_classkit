@@ -95,8 +95,8 @@ classkit = class Classkit
   #   obj = new Base
   #   obj.someInstanceMethod()
   @concern: (klass) ->
-    @instanceVariable klass, '_dependencies', []
-    @instanceVariable klass, 'includedBlock'
+    @instanceVariable klass, '_dependencies', 'includedBlock'
+    klass._dependencies = []
 
     klass.appendFeatures = (base) ->
       if base._dependencies
@@ -116,26 +116,31 @@ classkit = class Classkit
     false
 
   # # Variables
-  @instanceVariable: (obj, name, val) ->
-    private_name = "_#{name}"
-    Object.defineProperty obj, name,
-      get: -> @[private_name] if @hasOwnProperty private_name
-      set: (val) -> @[private_name] = val
-    obj[name] = val
+  @instanceVariable: (obj, attrs...) ->
+    for name in attrs
+      do (name) ->
+        private_name = "_#{name}"
+        Object.defineProperty obj, name,
+          get: -> @[private_name] if @hasOwnProperty private_name
+          set: (val) -> @[private_name] = val
     @
 
-  @classVariable: (obj, name, data) ->
-    Object.defineProperty obj, name,
-      get: -> data
-      set: (val) -> data = val
+  @classVariable: (obj, attrs...) ->
+    for name in attrs
+      do (name, data = undefined) ->
+        Object.defineProperty obj, name,
+          get: -> data
+          set: (val) -> data = val
     @
 
-  @classAttribute: (obj, name, data) ->
-    obj[name] = data
-    private_name = "_#{name}"
-    Object.defineProperty obj::, name,
-      get: -> if @hasOwnProperty(private_name) then @[private_name] else @constructor[name]
-      set: (value) -> @[private_name] = value
+  @classAttribute: (obj, attrs...) ->
+    for name in attrs
+      do (name) ->
+        private_name = "_#{name}"
+        Object.defineProperty obj::, name,
+          get: -> if @hasOwnProperty(private_name) then @[private_name] else @constructor[name]
+          set: (value) -> @[private_name] = value
+    @
 
   # # Aliasing
   @aliasMethod: (klass, to, from) ->
