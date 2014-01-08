@@ -1,4 +1,4 @@
-classkit = class Classkit
+class Classkit
   # # Inheritance
   # Under development.
   # No docs yet. See ruby analogs.
@@ -7,7 +7,7 @@ classkit = class Classkit
   # to override js & coffee inheritance model.
   #
   # We also need to skip _extendsWithProto_ in extend. It allows to call it
-  # from class that not extending _classkit.Module_.
+  # from class that not extending _Classkit.Module_.
   @SKIP_IN_EXTEND:   ['__super__', 'extendsWithProto']
   @SKIP_IN_INCLUDE:  ['constructor']
 
@@ -19,7 +19,7 @@ classkit = class Classkit
   #     @attr: 1
   #
   #   class Child extends Parent
-  #     classkit.extendsWithProto @
+  #     Classkit.extendsWithProto @
   #
   #   Child.hasOwnProperty('attr')
   #   # => false
@@ -69,7 +69,7 @@ classkit = class Classkit
   # ActiveSupport::Concern's analog.
   #
   #   class Mixin
-  #     classkit.concern @
+  #     Classkit.concern @
   #
   #     @includedBlock = ->
   #       # here is context of base class
@@ -84,8 +84,8 @@ classkit = class Classkit
   #       # ...
   #
   #   class Base
-  #     classkit.extendsWithProto @
-  #     classkit.include @, Mixin
+  #     Classkit.extendsWithProto @
+  #     Classkit.include @, Mixin
   #     # callbacks are already defined
   #
   #     # use class methods
@@ -102,11 +102,11 @@ classkit = class Classkit
       if base._dependencies
         base._dependencies.push @
         return false
-      return false if classkit.isSubclass base, @
-      classkit.include base, dep for dep in @_dependencies
-      classkit.appendFeatures @, base
-      classkit.extend base, @ClassMethods if @hasOwnProperty 'ClassMethods'
-      @includedBlock?.call base, classkit
+      return false if Classkit.isSubclass base, @
+      Classkit.include base, dep for dep in @_dependencies
+      Classkit.appendFeatures @, base
+      Classkit.extend base, @ClassMethods if @hasOwnProperty 'ClassMethods'
+      @includedBlock?.call base, Classkit
     @
 
   @isSubclass: (klass, other) ->
@@ -191,36 +191,36 @@ classkit = class Classkit
     'isSubclass'
   ]
 
-  # Injects all classkit methods as class methods into target.
+  # Injects all Classkit methods as class methods into target.
   @inject: (klass) ->
     @CHAINABLE_CLASSKIT_METHODS.forEach (method) ->
       klass[method] = ->
-        classkit[method] @, arguments...
+        Classkit[method] @, arguments...
         @
     @NOT_CHAINABLE_CLASSKIT_METHODS.forEach (method) ->
-      klass[method] = -> classkit[method] @, arguments...
+      klass[method] = -> Classkit[method] @, arguments...
 
   # Simple class with injected methods. Use it as a top of your class hierarchy.
   # Do not forget to call _extendsWithProto_ in inherited classes.
   #
   # Common ussage:
   #
-  #   class Parent extends classkit.Module
+  #   class Parent extends Classkit.Module
   #     @extendsWithProto()
   #
-  #   class Mixin extends classkit.Module
+  #   class Mixin extends Classkit.Module
   #     @extendsWithProto().concern()
   #
   #   class Child extends Parent
   #     @extendsWithProto()
   #     @include Mixin
-  @Module: class Module
+  class @Module
   @inject @Module
 
 # export
 if module?.exports
-  module.exports = classkit
+  module.exports = Classkit
 else if define?.amd
-  define -> classkit
+  define -> Classkit
 else
-  @classkit = classkit
+  @Classkit = Classkit
