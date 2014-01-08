@@ -217,6 +217,18 @@ class Classkit
   class @Module
   @inject @Module
 
+  # Method to use in pure js.
+  # It applies CoffeeScript's inheritance first and Classkit's then.
+  #
+  #   function Parent() { /* ... */ }
+  #   var Child;
+  #   Classkit.inherit(Parent, Child = function Child(){ /* ... */ });
+  class extends Object
+  @inherit: (parent, child) ->
+    `__extends(child, parent)`
+    @extendsWithProto child
+    child
+
 # export
 if module?.exports
   module.exports = Classkit

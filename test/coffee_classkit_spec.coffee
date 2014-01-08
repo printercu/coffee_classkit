@@ -1,22 +1,25 @@
 assert    = require 'assert'
 classkit  = require '../'
 
+testBasicInheritance = ->
+  it 'keeps child`s own properties clean', ->
+    assert.deepEqual Object.keys(@Parent), ['x']
+    assert.deepEqual Object.keys(@Child), ['__super__']
+    assert.equal @Parent.x(), true
+    assert.equal @Child.x(), true
+
+  it 'sets parent as prototype of ancestor', ->
+    assert.deepEqual @Child.__proto__, @Parent
+
 describe 'coffee_classkit', ->
   describe '#extendsWithProto', ->
     beforeEach ->
-      class @A
+      class @Parent
         @x = -> true
-      class @B extends @A
+      class @Child extends @Parent
         classkit.extendsWithProto @
 
-    it 'keeps child`s own properties clean', ->
-      assert.deepEqual Object.keys(@A), ['x']
-      assert.deepEqual Object.keys(@B), ['__super__']
-      assert.equal @A.x(), true
-      assert.equal @B.x(), true
-
-    it 'sets parent as prototype of ancestor', ->
-      assert.deepEqual @B.__proto__, @A
+    testBasicInheritance()
 
     it 'runs _inherited_ hook', ->
       class X
@@ -182,3 +185,25 @@ describe 'coffee_classkit', ->
       assert.equal Base::x, 1
       assert.equal Base.y, null
       assert.equal Base::y, null
+
+  describe '::inherit', ->
+    beforeEach ->
+      @Parent = ->
+      @Parent.x = -> true
+      classkit.inherit @Parent, @Child = ->
+
+    testBasicInheritance()
+
+    it 'runs _inherited_ hook', ->
+      X = ->
+      X.inherited = (subclass) ->
+        assert.equal @, X
+        assert.equal subclass.xattr, X.xattr
+        subclass.yattr = true
+
+      X.xattr = a: 1
+
+      classkit.inherit X, Y = ->
+
+      assert.equal X.yattr, null
+      assert Y.yattr

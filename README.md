@@ -70,6 +70,18 @@ Once you use `extendsWithProto` you should use it on all descendents.
 * `ActiveSupport::Concern`-like behaviour is optional.
 * It works only 'cause of `__proto__`. Some say it's deprecated :)
 
+## For pure JS
+`Classkit.inherit` method provides inheritance that can be used in pure JS:
+
+```js
+function Parent() { /* ... */ }
+var Child;
+Classkit.inherit(Parent, Child = function Child(){ /* ... */ });
+```
+
+It uses CoffeeScript's inheritance. Take a look on compiled coffee source
+to know how to use `super` properly.
+
 ## More examples
 
 See source, tests & [costa](https://github.com/printercu/costa).
